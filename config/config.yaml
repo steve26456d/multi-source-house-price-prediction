@@ -1,0 +1,139 @@
+# ============================================================
+# 多源数据融合挖掘——房价预测
+# 项目配置文件
+# ============================================================
+
+# ========================
+# 数据配置
+# ========================
+data:
+  ames:
+    name: "Ames Housing Dataset"
+    path: "./data/raw/ames_train.csv"
+    target_column: "SalePrice"
+    n_samples: 2930
+    n_features: 79
+  florida:
+    name: "Florida Real Estate Sold 2026"
+    path: "./data/raw/florida_sold_2026.csv"
+    target_column: "sale_price"
+    text_column: "text_clean"
+    n_samples: 10893
+
+# ========================
+# 预处理配置
+# ========================
+preprocessing:
+  missing_values:
+    numeric_strategy: "median"       # median / mean / knn
+    categorical_strategy: "mode"     # mode / "missing" (新类别)
+  outlier_detection:
+    method: "iqr"                    # iqr / zscore / isolation_forest
+    threshold: 1.5                   # IQR 倍数
+  encoding:
+    categorical: "onehot"            # onehot / label / target
+    max_categories: 50               # 超过此数的类别用 label encoding
+  scaling:
+    method: "standard"               # standard / minmax / robust
+  text:
+    tokenizer: "spacy"               # spacy / nltk
+    remove_stopwords: true
+    min_token_length: 2
+    tfidf:
+      max_features: 5000
+      ngram_range: [1, 2]
+    svd:
+      n_components: 150              # TF-IDF 降维至 150 维
+    bert:
+      model_name: "bert-base-uncased"
+      max_length: 256
+      pooling: "cls"                 # cls / mean
+
+# ========================
+# 训练配置
+# ========================
+training:
+  random_seed: 42
+  test_size: 0.1                     # 测试集占比
+  val_size: 0.1                      # 验证集占比
+  florida_split_method: "temporal"   # temporal (按时序) / random
+  ames_split_method: "random"
+
+# ========================
+# 模型配置
+# ========================
+models:
+  # --- 结构化基线 ---
+  linear_regression:
+    enabled: true
+  random_forest:
+    enabled: true
+    n_estimators: 200
+    max_depth: 20
+  xgboost:
+    enabled: true
+    n_estimators: 500
+    max_depth: 8
+    learning_rate: 0.05
+    early_stopping_rounds: 50
+
+  # --- 文本基线 ---
+  ridge_regression:
+    enabled: true         # TF-IDF + Ridge
+    alpha: 1.0
+  bert_mlp:
+    enabled: true
+    hidden_dims: [256, 128]
+    dropout: 0.3
+    learning_rate: 1e-4
+    batch_size: 32
+    max_epochs: 50
+
+  # --- 早期融合 ---
+  early_fusion_xgboost:
+    enabled: true
+  early_fusion_mlp:
+    enabled: true
+    hidden_dims: [512, 256, 128]
+
+  # --- 中期融合 ---
+  mid_fusion_attention:
+    enabled: true
+    structured_hidden_dim: 64
+    text_hidden_dim: 768
+    fusion_dim: 256
+    num_attention_heads: 4
+
+  # --- 晚期融合 ---
+  late_fusion_stacking:
+    enabled: true
+    base_models: ["xgboost", "bert_mlp"]
+    meta_model: "ridge"
+
+# ========================
+# 评估配置
+# ========================
+evaluation:
+  metrics:
+    - "rmse"
+    - "mae"
+    - "r2"
+    - "mape"
+  significance_test: "wilcoxon"     # wilcoxon / ttest
+  alpha: 0.05                        # 显著性水平
+  visualization:
+    scatter: true                    # 预测值 vs 真实值
+    residuals: true                  # 残差图
+    feature_importance: true         # 特征重要性
+    error_by_price_bin: true         # 分价格区间误差
+
+# ========================
+# 输出配置
+# ========================
+output:
+  model_dir: "./models"
+  results_dir: "./results"
+  figures_dir: "./results/figures"
+  log_dir: "./logs"
+  save_predictions: true
+  save_model: true
