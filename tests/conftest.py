@@ -8,7 +8,6 @@ pytest 公共 fixtures 和配置。
 
 import pytest
 import numpy as np
-import pandas as pd
 
 
 @pytest.fixture
@@ -17,10 +16,10 @@ def sample_structured_data():
     np.random.seed(42)
     n_samples = 100
     n_features = 20
-    X = np.random.randn(n_samples, n_features)
-    y = 100000 + 50000 * X[:, 0] + np.random.randn(n_samples) * 10000
+    x = np.random.randn(n_samples, n_features)
+    y = 100000 + 50000 * x[:, 0] + np.random.randn(n_samples) * 10000
     feature_names = [f"feat_{i}" for i in range(n_features)]
-    return X, y, feature_names
+    return x, y, feature_names
 
 
 @pytest.fixture
