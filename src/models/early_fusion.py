@@ -20,7 +20,11 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 import torch.nn as nn
-from xgboost import XGBRegressor
+
+try:
+    from xgboost import XGBRegressor
+except ImportError:
+    XGBRegressor = None
 
 from .base import BaseHousePriceModel
 from ..features.fusion import concat_features
@@ -77,6 +81,10 @@ class EarlyFusionXGBoost(BaseHousePriceModel):
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         super().__init__(config)
+        if XGBRegressor is None:
+            raise ImportError(
+                "xgboost is not installed; install xgboost to use EarlyFusionXGBoost."
+            )
         xgb_config = self.config.get("early_fusion_xgboost", {})
         self.text_source = self.config.get(
             "text_source", "tfidf"

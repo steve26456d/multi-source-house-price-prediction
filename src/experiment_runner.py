@@ -13,6 +13,7 @@ Functionality:
 """
 
 import csv
+import argparse
 import os
 import sys
 import time
@@ -126,11 +127,39 @@ def load_data():
     return X_struct, y, X_text
 
 
+def load_smoke_data(
+    n_samples: int = 80,
+    n_struct_features: int = 12,
+    n_tfidf_features: int = 32,
+    n_bert_features: int = 64,
+    random_state: int = 42,
+):
+    """Generate a small deterministic dataset for end-to-end smoke runs.
+
+    This does not replace the real Florida/Ames experiment. It verifies that
+    the data/model/evaluation/result-writing pipeline is executable when the
+    large Kaggle files are not present locally.
+    """
+    rng = np.random.default_rng(random_state)
+    X_struct = rng.normal(size=(n_samples, n_struct_features)).astype(np.float64)
+    tfidf = rng.normal(size=(n_samples, n_tfidf_features)).astype(np.float64)
+    bert = rng.normal(size=(n_samples, n_bert_features)).astype(np.float64)
+    y = (
+        250000
+        + X_struct[:, 0] * 60000
+        + X_struct[:, 1] * -25000
+        + tfidf[:, 0] * 15000
+        + bert[:, 0] * 10000
+        + rng.normal(scale=12000, size=n_samples)
+    ).astype(np.float64)
+    return X_struct, y, {"tfidf": tfidf, "bert_embeddings": bert}
+
+
 # ============================================================
 # Model Creation
 # ============================================================
 
-def create_models() -> List[Dict[str, Any]]:
+def create_models(smoke: bool = False) -> List[Dict[str, Any]]:
     """Create all models for evaluation
 
     Returns
@@ -139,98 +168,96 @@ def create_models() -> List[Dict[str, Any]]:
         Each dict contains model_name, model_instance, modality.
     """
     config = {
-        "random_forest": {"n_estimators": 200, "max_depth": 20},
+        "random_forest": {
+            "n_estimators": 20 if smoke else 200,
+            "max_depth": 6 if smoke else 20,
+        },
         "xgboost": {
-            "n_estimators": 500, "max_depth": 8,
+            "n_estimators": 20 if smoke else 500,
+            "max_depth": 3 if smoke else 8,
             "learning_rate": 0.05, "subsample": 0.8,
             "colsample_bytree": 0.8,
         },
         "ridge_regression": {"alpha": 1.0},
         "bert_mlp": {
-            "hidden_dims": [256, 128], "dropout": 0.3,
-            "learning_rate": 1e-4, "batch_size": 32,
-            "max_epochs": 50, "patience": 10,
+            "hidden_dims": [32] if smoke else [256, 128],
+            "dropout": 0.3,
+            "learning_rate": 1e-3 if smoke else 1e-4,
+            "batch_size": 16 if smoke else 32,
+            "max_epochs": 3 if smoke else 50,
+            "patience": 2 if smoke else 10,
         },
         "early_fusion_xgboost": {
-            "n_estimators": 500, "max_depth": 8,
+            "n_estimators": 20 if smoke else 500,
+            "max_depth": 3 if smoke else 8,
             "learning_rate": 0.05,
         },
         "early_fusion_mlp": {
-            "hidden_dims": [512, 256, 128], "dropout": 0.3,
-            "learning_rate": 1e-4, "batch_size": 64,
-            "max_epochs": 50, "patience": 10,
+            "hidden_dims": [64] if smoke else [512, 256, 128],
+            "dropout": 0.3,
+            "learning_rate": 1e-3 if smoke else 1e-4,
+            "batch_size": 16 if smoke else 64,
+            "max_epochs": 3 if smoke else 50,
+            "patience": 2 if smoke else 10,
         },
         "mid_fusion_attention": {
-            "structured_hidden_dim": 64, "text_hidden_dim": 768,
-            "fusion_dim": 256, "num_attention_heads": 4,
-            "dropout": 0.3, "learning_rate": 1e-4,
-            "batch_size": 64, "max_epochs": 50, "patience": 10,
+            "structured_hidden_dim": 32 if smoke else 64,
+            "text_hidden_dim": 64 if smoke else 768,
+            "fusion_dim": 32 if smoke else 256,
+            "num_attention_heads": 4,
+            "dropout": 0.3,
+            "learning_rate": 1e-3 if smoke else 1e-4,
+            "batch_size": 16 if smoke else 64,
+            "max_epochs": 3 if smoke else 50,
+            "patience": 2 if smoke else 10,
         },
         "late_fusion_stacking": {
             "base_models": ["xgboost", "bert_mlp"],
-            "meta_model": "ridge", "batch_size": 64,
-            "max_epochs": 50,
+            "meta_model": "ridge",
+            "batch_size": 16 if smoke else 64,
+            "max_epochs": 3 if smoke else 50,
         },
     }
 
-    models = [
-        # Structured baselines
-        {
-            "model_name": "LinearBaseline",
-            "instance": LinearBaseline(config=config),
-            "modality": "structured",
-        },
-        {
-            "model_name": "RandomForestBaseline",
-            "instance": RandomForestBaseline(config=config),
-            "modality": "structured",
-        },
-        {
-            "model_name": "XGBoostBaseline",
-            "instance": XGBoostBaseline(config=config),
-            "modality": "structured",
-        },
-        # Text baselines
-        {
-            "model_name": "TFIDFRidgeBaseline",
-            "instance": TFIDFRidgeBaseline(config=config),
-            "modality": "text",
-        },
-        {
-            "model_name": "BERTMLPBaseline",
-            "instance": BERTMLPBaseline(config=config),
-            "modality": "text",
-        },
-        # Early fusion
-        {
-            "model_name": "EarlyFusionXGBoost",
-            "instance": EarlyFusionXGBoost(
-                config={**config, "text_source": "tfidf"}
-            ),
-            "modality": "fusion_early",
-        },
-        {
-            "model_name": "EarlyFusionMLP",
-            "instance": EarlyFusionMLP(
-                config={**config, "text_source": "tfidf"}
-            ),
-            "modality": "fusion_early",
-        },
-        # Mid fusion
-        {
-            "model_name": "MidFusionModel",
-            "instance": MidFusionModel(
-                config={**config, "text_source": "bert_embeddings"}
-            ),
-            "modality": "fusion_mid",
-        },
-        # Late fusion
-        {
-            "model_name": "LateFusionStacking",
-            "instance": LateFusionStacking(config=config),
-            "modality": "fusion_late",
-        },
+    specs = [
+        ("LinearBaseline", LinearBaseline, config, "structured"),
+        ("RandomForestBaseline", RandomForestBaseline, config, "structured"),
+        ("XGBoostBaseline", XGBoostBaseline, config, "structured"),
+        ("TFIDFRidgeBaseline", TFIDFRidgeBaseline, config, "text"),
+        ("BERTMLPBaseline", BERTMLPBaseline, config, "text"),
+        (
+            "EarlyFusionXGBoost",
+            EarlyFusionXGBoost,
+            {**config, "text_source": "tfidf"},
+            "fusion_early",
+        ),
+        (
+            "EarlyFusionMLP",
+            EarlyFusionMLP,
+            {**config, "text_source": "tfidf"},
+            "fusion_early",
+        ),
+        (
+            "MidFusionModel",
+            MidFusionModel,
+            {**config, "text_source": "bert_embeddings"},
+            "fusion_mid",
+        ),
+        ("LateFusionStacking", LateFusionStacking, config, "fusion_late"),
     ]
+
+    models = []
+    for model_name, model_cls, model_config, modality in specs:
+        try:
+            models.append(
+                {
+                    "model_name": model_name,
+                    "instance": model_cls(config=model_config),
+                    "modality": modality,
+                }
+            )
+        except ImportError as exc:
+            print(f"[SKIP] {model_name}: {exc}")
 
     return models
 
@@ -439,8 +466,16 @@ def print_summary(results: List[Dict[str, Any]]):
 # Main Entry
 # ============================================================
 
-def main():
+def main(argv: Optional[List[str]] = None):
     """Run all experiments"""
+    parser = argparse.ArgumentParser(description="Run house price experiments.")
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="Run a small synthetic end-to-end smoke experiment.",
+    )
+    args = parser.parse_args(argv)
+
     print("=" * 60)
     print("Multi-source Data Fusion -- House Price Prediction")
     print("Experiment Runner")
@@ -448,7 +483,11 @@ def main():
     print("=" * 60)
 
     # 1. Load data
-    X_struct, y, X_text = load_data()
+    if args.smoke:
+        print("Smoke mode enabled: using synthetic data.")
+        X_struct, y, X_text = load_smoke_data()
+    else:
+        X_struct, y, X_text = load_data()
 
     # 2. Split data consistently
     print("\nSplitting data...")
@@ -487,7 +526,7 @@ def main():
     print(f"Test:  {X_test.shape[0]} samples")
 
     # 3. Create models
-    models = create_models()
+    models = create_models(smoke=args.smoke)
     print(f"\nTotal {len(models)} models to train")
 
     # 4. Train and evaluate

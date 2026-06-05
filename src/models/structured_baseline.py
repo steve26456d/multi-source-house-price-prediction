@@ -17,7 +17,11 @@ from typing import Any, Dict, Optional
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
+
+try:
+    from xgboost import XGBRegressor
+except ImportError:
+    XGBRegressor = None
 
 from .base import BaseHousePriceModel
 
@@ -128,6 +132,10 @@ class XGBoostBaseline(BaseHousePriceModel):
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         super().__init__(config)
+        if XGBRegressor is None:
+            raise ImportError(
+                "xgboost is not installed; install xgboost to use XGBoostBaseline."
+            )
         xgb_config = self.config.get("xgboost", {})
         self.model = XGBRegressor(
             n_estimators=xgb_config.get("n_estimators", 500),

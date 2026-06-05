@@ -28,7 +28,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.linear_model import Ridge
-from xgboost import XGBRegressor
+
+try:
+    from xgboost import XGBRegressor
+except ImportError:
+    XGBRegressor = None
 
 from .base import BaseHousePriceModel
 from .text_baseline import MLPRegressor
@@ -60,7 +64,7 @@ class LateFusionStacking(BaseHousePriceModel):
         self.meta_model_name = lf_config.get("meta_model", "ridge")
 
         # 子模型将在 fit 时初始化
-        self.struct_model: Optional[XGBRegressor] = None
+        self.struct_model: Optional[Any] = None
         self.text_model: Optional[MLPRegressor] = None
         self.meta_model: Optional[Ridge] = None
 
@@ -97,6 +101,11 @@ class LateFusionStacking(BaseHousePriceModel):
         text_dim : int
             文本特征维度（BERT 768）。
         """
+        if XGBRegressor is None:
+            raise ImportError(
+                "xgboost is not installed; install xgboost to use LateFusionStacking."
+            )
+
         # 结构化基模型：XGBoost
         xgb_config = self.config.get("xgboost", {})
         self.struct_model = XGBRegressor(
