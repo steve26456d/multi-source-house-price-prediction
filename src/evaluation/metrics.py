@@ -1,99 +1,118 @@
-"""
-临时评估工具函数（供 experiment_runner.py 使用）
+"""Regression metrics for house price prediction experiments."""
 
-⚠️ 注意：评估指标模块的正式版本由石韫嘉（评估负责人）负责。
-此文件仅为支撑算法实验运行而创建的临时工具，包含最基础的
-RMSE / MAE / R² / MAPE 计算。
-
-正式版本见 石韫嘉 提交的 src/evaluation/metrics.py。
-"""
+from __future__ import annotations
 
 from typing import Dict
 
 import numpy as np
-from sklearn.metrics import (
-    mean_squared_error,
-    mean_absolute_error,
-    r2_score,
-)
 
 
-def compute_metrics(
-    y_true: np.ndarray, y_pred: np.ndarray
-) -> Dict[str, float]:
-    """计算所有评估指标
+def _as_1d_float_array(values: np.ndarray, name: str) -> np.ndarray:
+    """Convert input values to a finite one-dimensional float array."""
+    array = np.asarray(values, dtype=float)
+    if array.ndim != 1:
+        raise ValueError(f"{name} must be a one-dimensional array.")
+    if array.size == 0:
+        raise ValueError(f"{name} must not be empty.")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return array
+
+
+def _validate_targets(y_true: np.ndarray, y_pred: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    true = _as_1d_float_array(y_true, "y_true")
+    pred = _as_1d_float_array(y_pred, "y_pred")
+    if true.shape != pred.shape:
+        raise ValueError("y_true and y_pred must have the same shape.")
+    return true, pred
+
+
+def rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Return root mean squared error."""
+    true, pred = _validate_targets(y_true, y_pred)
+    return float(np.sqrt(np.mean(np.square(true - pred))))
+
+
+def mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Return mean absolute error."""
+    true, pred = _validate_targets(y_true, y_pred)
+    return float(np.mean(np.abs(true - pred)))
+
+
+def r2_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Return coefficient of determination."""
+    true, pred = _validate_targets(y_true, y_pred)
+    total_sum_squares = np.sum(np.square(true - np.mean(true)))
+    if total_sum_squares == 0:
+        return 1.0 if np.allclose(true, pred) else 0.0
+    residual_sum_squares = np.sum(np.square(true - pred))
+    return float(1.0 - residual_sum_squares / total_sum_squares)
+
+
+def mape(y_true: np.ndarray, y_pred: np.ndarray, epsilon: float = 1e-8) -> float:
+    """Return mean absolute percentage error in percent."""
+    true, pred = _validate_targets(y_true, y_pred)
+    if epsilon <= 0:
+        raise ValueError("epsilon must be positive.")
+    denominator = np.maximum(np.abs(true), epsilon)
+    return float(np.mean(np.abs((true - pred) / denominator)) * 100.0)
+
+
+def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """Compute all project regression metrics.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
-        真实房价（原始尺度）。
-    y_pred : np.ndarray, shape (n_samples,)
-        预测房价（原始尺度）。
+    y_true:
+        Ground-truth house prices with shape ``(n_samples,)``.
+    y_pred:
+        Predicted house prices with shape ``(n_samples,)``.
 
     Returns
     -------
-    metrics : Dict[str, float]
-        包含 rmse, mae, r2, mape 的字典。
-
-    Notes
-    -----
-    MAPE 计算时对接近零的真实值做了保护处理。
+    dict
+        Metrics keyed by ``rmse``, ``mae``, ``r2``, and ``mape``.
     """
-    # 确保输入是一维数组
-    y_true = np.asarray(y_true).ravel()
-    y_pred = np.asarray(y_pred).ravel()
-
-    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    mae = float(mean_absolute_error(y_true, y_pred))
-    r2 = float(r2_score(y_true, y_pred))
-
-    # MAPE：对接近零的值做保护，避免除零
-    epsilon = 1e-8
-    mask = np.abs(y_true) > epsilon
-    if mask.sum() > 0:
-        mape = float(
-            np.mean(
-                np.abs(
-                    (y_true[mask] - y_pred[mask]) / y_true[mask]
-                )
-            )
-            * 100
-        )
-    else:
-        mape = float("nan")
-
+    true, pred = _validate_targets(y_true, y_pred)
     return {
-        "rmse": rmse,
-        "mae": mae,
-        "r2": r2,
-        "mape": mape,
+        "rmse": rmse(true, pred),
+        "mae": mae(true, pred),
+        "r2": r2_score(true, pred),
+        "mape": mape(true, pred),
     }
 
 
-def compute_metrics_safe(
-    y_true: np.ndarray, y_pred: np.ndarray
-) -> Dict[str, float]:
-    """安全版指标计算（与 compute_metrics 相同，增加异常处理）
+def compute_metrics_safe(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """Compute metrics after dropping non-finite prediction pairs.
 
-    在包含 NaN 或 Inf 值时不会崩溃。
+    This preserves compatibility with the algorithm branch's temporary helper
+    while keeping the formal metric definitions strict by default.
     """
-    y_true = np.asarray(y_true).ravel()
-    y_pred = np.asarray(y_pred).ravel()
+    true = np.asarray(y_true, dtype=float).ravel()
+    pred = np.asarray(y_pred, dtype=float).ravel()
+    if true.shape != pred.shape:
+        raise ValueError("y_true and y_pred must have the same shape.")
 
-    # 过滤 NaN/Inf
-    mask = (
-        np.isfinite(y_true)
-        & np.isfinite(y_pred)
-    )
-    y_true = y_true[mask]
-    y_pred = y_pred[mask]
-
-    if len(y_true) == 0:
+    mask = np.isfinite(true) & np.isfinite(pred)
+    if not np.any(mask):
         return {
             "rmse": float("nan"),
             "mae": float("nan"),
             "r2": float("nan"),
             "mape": float("nan"),
         }
+    return compute_metrics(true[mask], pred[mask])
 
-    return compute_metrics(y_true, y_pred)
+
+def error_summary(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """Compute descriptive statistics for prediction errors."""
+    true, pred = _validate_targets(y_true, y_pred)
+    residual = pred - true
+    absolute_error = np.abs(residual)
+    return {
+        "mean_error": float(np.mean(residual)),
+        "median_error": float(np.median(residual)),
+        "mean_abs_error": float(np.mean(absolute_error)),
+        "median_abs_error": float(np.median(absolute_error)),
+        "max_abs_error": float(np.max(absolute_error)),
+    }
