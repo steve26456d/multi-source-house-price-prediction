@@ -1,0 +1,10 @@
+rank,model_name,modality,test_rmse,test_mae,test_r2,test_mape,status
+1,EarlyFusionMLP,fusion_early,110786.789055,73940.116972,0.835737,232.118945,success
+2,MidFusionModel,fusion_mid,116850.777739,77369.075717,0.817263,305.135892,success
+3,EarlyFusionXGBoost,fusion_early,128782.094416,89025.913216,0.778040,195.859278,success
+4,LateFusionStacking,fusion_late,137601.433432,95495.663511,0.746598,317.612781,success
+5,LinearBaseline,structured,138423.667927,98183.643430,0.743561,404.473473,success
+6,XGBoostBaseline,structured,142935.019564,99872.333300,0.726573,373.778559,success
+7,RandomForestBaseline,structured,164139.776681,110770.610255,0.639429,333.821160,success
+8,TFIDFRidgeBaseline,text,175620.823827,132936.364559,0.587223,501.756139,success
+9,BERTMLPBaseline,text,209774.194879,157895.626061,0.411065,713.165476,success
