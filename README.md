@@ -105,17 +105,147 @@ pip install -r requirements.txt
 ```
 
 ---
-
 ## 快速开始
 
+### 1. 激活环境
+
 ```bash
-# 1. 配置数据路径
+# 配置数据路径
 cp .env.example .env
 # 编辑 .env 填入 Kaggle 数据集保存路径
 
-# 2. 运行完整 Pipeline
+# 激活环境
+conda activate house-price-fusion
+```
+
+### 2. 准备数据
+
+将处理后的数据文件放入：
+
+```text
+data/processed/
+```
+
+必须包含：
+
+```text
+florida_structured.csv
+florida_tfidf_features.pkl
+florida_bert_embeddings.pkl
+```
+
+### 3. 检查项目结构和数据
+
+```bash
+python src/pipeline/run_pipeline.py --check-only
+```
+
+通过后会显示：
+
+```text
+项目结构检查通过。
+真实数据文件检查通过。
+```
+
+### 4. 运行 Smoke 测试
+
+Smoke 模式使用小规模模拟数据，用于快速检查 Pipeline 是否能完整跑通：
+
+```bash
+python src/pipeline/run_pipeline.py --smoke
+```
+
+### 5. 运行完整实验
+
+```bash
 python src/pipeline/run_pipeline.py
 ```
+
+Pipeline 会自动完成：
+
+```text
+1. 加载结构化特征、TF-IDF 特征和 BERT 文本特征
+2. 划分训练集、验证集和测试集
+3. 训练结构化模型、文本模型和多源融合模型
+4. 计算 RMSE、MAE、R2、MAPE 等评估指标
+5. 将实验结果保存到 results/experiment_log.csv
+```
+
+### 6. 运行测试
+
+```bash
+python -m pytest
+```
+
+当前测试结果：
+
+```text
+14 passed
+```
+
+## Pipeline 入口
+
+本项目的统一运行入口为：
+
+```text
+src/pipeline/run_pipeline.py
+```
+
+支持三种运行方式：
+
+```bash
+python src/pipeline/run_pipeline.py --check-only
+python src/pipeline/run_pipeline.py --smoke
+python src/pipeline/run_pipeline.py
+```
+
+| 命令             | 作用                 |
+| -------------- | ------------------ |
+| `--check-only` | 只检查项目结构和数据文件，不训练模型 |
+| `--smoke`      | 使用模拟数据快速测试完整流程     |
+| 默认运行           | 使用真实处理后数据运行完整实验    |
+
+## 实验结果
+
+真实数据实验已成功跑通，共训练并评估 9 个模型：
+
+```text
+LinearBaseline
+RandomForestBaseline
+XGBoostBaseline
+TFIDFRidgeBaseline
+BERTMLPBaseline
+EarlyFusionXGBoost
+EarlyFusionMLP
+MidFusionModel
+LateFusionStacking
+```
+
+实验数据规模：
+
+```text
+样本数量：10893
+结构化特征：882
+TF-IDF 特征：128
+BERT 特征：768
+训练集：8714
+验证集：1089
+测试集：1090
+```
+
+最佳模型为：
+
+```text
+模型：EarlyFusionMLP
+Test RMSE：108014.78
+Test MAE：74059.86
+Test R2：0.8439
+```
+
+结果表明，融合结构化房屋属性和文本描述特征后，模型预测效果优于单一数据源模型。
+
+
+
 
 ---
 
