@@ -36,13 +36,13 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# ============================================================
-# Project data (large files, not for git)
-# ============================================================
-data/raw/*
-data/processed/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+# # ============================================================
+# # Project data (large files, not for git)
+# # ============================================================
+# data/raw/*
+# data/processed/*
+# !data/raw/.gitkeep
+# !data/processed/.gitkeep
 
 # ============================================================
 # Models (large binaries)
