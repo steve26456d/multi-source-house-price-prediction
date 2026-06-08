@@ -28,7 +28,6 @@
 
 | 数据集 | 样本数 | 模态 | 用途 |
 |--------|--------|------|------|
-| [Ames Housing Dataset](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques) | 2,930 | 结构化（79 特征） | 结构化基线 |
 | [Florida Real Estate Sold 2026](https://www.kaggle.com/datasets/kanchana1990/florida-real-estate-sold-dataset-2026) | 10,893 | 结构化 + 文本 | 多模态融合实验 |
 
 ---
@@ -283,13 +282,12 @@ Test R2：0.8439
 
 ## 主要参考资料
 
-1. Kaggle Ames Housing Dataset: [House Prices - Advanced Regression Techniques](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
-2. Kaggle Florida Real Estate Sold 2026: [Florida Real Estate Sold Dataset 2026](https://www.kaggle.com/datasets/kanchana1990/florida-real-estate-sold-dataset-2026)
-3. Ahmed, E. & Moustafa, M. (2016). House price estimation from visual and textual features. *IJCNN 2016*.
-4. Poursaeed, O., Matera, T., & Belongie, S. (2018). Vision-based real estate price estimation. *Machine Vision and Applications*, 29(4), 667–676.
-5. Law, S., Paige, B., & Russell, C. (2019). Take a look around: Using street view and satellite images to predict house prices. *ACM TIST*, 10(5), 1–19.
-6. Devlin, J., et al. (2019). BERT: Pre-training of deep bidirectional transformers. *NAACL-HLT 2019*.
-7. Chen, T. & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *ACM SIGKDD 2016*.
+1. Kaggle Florida Real Estate Sold 2026: [Florida Real Estate Sold Dataset 2026](https://www.kaggle.com/datasets/kanchana1990/florida-real-estate-sold-dataset-2026)
+2. Ahmed, E. & Moustafa, M. (2016). House price estimation from visual and textual features. *IJCNN 2016*.
+3. Poursaeed, O., Matera, T., & Belongie, S. (2018). Vision-based real estate price estimation. *Machine Vision and Applications*, 29(4), 667–676.
+4. Law, S., Paige, B., & Russell, C. (2019). Take a look around: Using street view and satellite images to predict house prices. *ACM TIST*, 10(5), 1–19.
+5. Devlin, J., et al. (2019). BERT: Pre-training of deep bidirectional transformers. *NAACL-HLT 2019*.
+6. Chen, T. & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *ACM SIGKDD 2016*.
 
 ---
 

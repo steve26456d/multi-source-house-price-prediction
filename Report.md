@@ -8,7 +8,7 @@
 
 实验结果表明，多源融合模型整体优于单一数据源模型。其中，EarlyFusionMLP 在测试集上取得最优表现，Test RMSE 为 108014.78，Test MAE 为 74059.86，Test R² 为 0.8439。相比表现最好的结构化基线模型 LinearBaseline，EarlyFusionMLP 的测试集 RMSE 降低约 21.97%，MAE 降低约 24.57%，R² 提升约 0.1003。结果说明，房源文本描述虽然单独建模效果有限，但与结构化房屋属性融合后能够提供额外信息，从而显著提升预测性能。
 
-在工程实现方面，本项目完成了从数据预处理、特征工程、模型训练、模型评估到实验结果输出的端到端流程，并新增统一 Pipeline 入口 `src/pipeline/run_pipeline.py`。该入口支持项目结构检查、真实数据检查、Smoke 测试和完整实验运行，提升了项目的可复现性和交付质量。
+在工程实现方面，本项目完成了从数据预处理、特征工程、模型训练、模型评估到实验结果输出的端到端流程，并新增统一 Pipeline 入口 `src/pipeline/run_pipeline.py`。该入口支持项目结构检查、真实数据检查、Smoke 测试和完整实验运行，提升了项目的可复现性和交付质量。项目完整代码已开源，GitHub 仓库地址为：https://github.com/steve26456d/multi-source-house-price-prediction。
 
 ---
 
@@ -46,14 +46,13 @@
 
 ### 2.1 数据来源
 
-本项目涉及两个房价相关数据集：
+本项目使用的核心数据集为：
 
 | 数据集                           |   样本数 | 数据模态         | 用途           |
 | ----------------------------- | ----: | ------------ | ------------ |
-| Ames Housing Dataset          |  2930 | 结构化数据        | 结构化房价预测参考数据集 |
 | Florida Real Estate Sold 2026 | 10893 | 结构化数据 + 文本数据 | 多源融合主实验数据集   |
 
-其中，Florida Real Estate Sold 2026 是本项目多源融合实验的核心数据集。该数据集同时包含房屋结构化属性和房源描述文本，适合用于验证结构化数据与文本数据融合在房价预测任务中的效果。
+Florida Real Estate Sold 2026 是本项目多源融合实验的核心数据集。该数据集同时包含房屋结构化属性和房源描述文本，适合用于验证结构化数据与文本数据融合在房价预测任务中的效果。
 
 本次完整 Pipeline 实验实际使用的是 Florida 数据集。真实数据运行时，系统读取以下三个处理后文件：
 
@@ -468,7 +467,7 @@ MAPE 的计算会将误差除以真实值。当真实成交价格较小或存在
 
 ### 6.1 项目结构
 
-本项目采用模块化工程结构，主要目录如下：
+本项目采用模块化工程结构，完整代码可在 GitHub 查看：https://github.com/steve26456d/multi-source-house-price-prediction。主要目录如下：
 
 ```text
 multi-source-house-price-prediction/
@@ -618,3 +617,21 @@ python src/pipeline/run_pipeline.py
 7. 使用多次重复实验或交叉验证，提高实验结论的可靠性。
 
 总体来看，本项目完成了从多源数据预处理、特征提取、融合建模、模型评估到工程化 Pipeline 交付的完整流程。实验结果验证了结构化房屋属性与文本描述信息之间的互补性，说明多源异构数据融合能够有效提升房价预测性能，达到了课程项目对数据挖掘分析、模型比较和工程实现的综合要求。
+
+---
+
+## 参考文献
+
+[1] Kaggle. Florida Real Estate Sold Dataset 2026. https://www.kaggle.com/datasets/kanchana1990/florida-real-estate-sold-dataset-2026
+
+[2] Ahmed, E. & Moustafa, M. (2016). House price estimation from visual and textual features. *Proceedings of the International Joint Conference on Neural Networks (IJCNN 2016)*.
+
+[3] Poursaeed, O., Matera, T., & Belongie, S. (2018). Vision-based real estate price estimation. *Machine Vision and Applications*, 29(4), 667–676.
+
+[4] Law, S., Paige, B., & Russell, C. (2019). Take a look around: Using street view and satellite images to predict house prices. *ACM Transactions on Intelligent Systems and Technology (TIST)*, 10(5), 1–19.
+
+[5] Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. *Proceedings of NAACL-HLT 2019*.
+
+[6] Chen, T. & Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*.
+
+[7] 项目 GitHub 仓库: https://github.com/steve26456d/multi-source-house-price-prediction
