@@ -1,0 +1,390 @@
+# Instincts generated from https://github.com/steve26456d/multi-source-house-price-prediction
+# Generated: 2026-06-11T12:04:26.219Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: multi-source-house-price-prediction-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Commit Length
+
+## Action
+
+Keep commit messages concise (~17 characters)
+
+## Evidence
+
+- Average commit message length: 17 chars
+- Based on 4 commits
+
+---
+id: multi-source-house-price-prediction-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Naming Files
+
+## Action
+
+Use snake_case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: snake_case
+
+---
+id: multi-source-house-price-prediction-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: multi-source-house-price-prediction-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: multi-source-house-price-prediction-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: multi-source-house-price-prediction-workflow-update-documentation-and-presentation-materials
+trigger: "when doing update documentation and presentation materials"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Workflow Update Documentation And Presentation Materials
+
+## Action
+
+Follow the update-documentation-and-presentation-materials workflow:
+1. Edit or add to Report.pdf or pre.pptx
+2. Optionally update supporting files (e.g., 团队分工声明.pdf, code/model files)
+3. Commit changes with a docs-related message
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: Report.pdf, pre.pptx, 团队分工声明.pdf
+
+---
+id: multi-source-house-price-prediction-workflow-add-or-update-experimental-results-and-visualizations
+trigger: "when doing add or update experimental results and visualizations"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Workflow Add Or Update Experimental Results And Visualizations
+
+## Action
+
+Follow the add-or-update-experimental-results-and-visualizations workflow:
+1. Generate new results or figures (e.g., .png, .csv) in results/
+2. Update or add to relevant Jupyter notebooks in notebooks/
+3. Commit all new/changed files together
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: results/*.png, results/*.csv, notebooks/*.ipynb
+
+---
+id: multi-source-house-price-prediction-workflow-update-git-lfs-tracking-for-large-files
+trigger: "when doing update git lfs tracking for large files"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Workflow Update Git Lfs Tracking For Large Files
+
+## Action
+
+Follow the update-git-lfs-tracking-for-large-files workflow:
+1. Edit .gitattributes to add new file types or patterns
+2. Commit .gitattributes (and optionally .gitignore) with a docs-related message
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: .gitattributes, .gitignore
+
+---
+id: multi-source-house-price-prediction-instinct-file-naming
+trigger: "When creating or renaming files in the codebase"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct File Naming
+
+## Action
+
+Use snake_case for all file names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+- Observed in src/models and notebooks
+
+---
+id: multi-source-house-price-prediction-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+
+---
+id: multi-source-house-price-prediction-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+
+---
+id: multi-source-house-price-prediction-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+
+---
+id: multi-source-house-price-prediction-instinct-import-style
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Import Style
+
+## Action
+
+Use relative imports
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+
+---
+id: multi-source-house-price-prediction-instinct-export-style
+trigger: "When exporting functions or classes from a module"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: multi-source-house-price-prediction-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Test Location
+
+## Action
+
+Place test files in a separate test directory, not mixed with src
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+
+---
+id: multi-source-house-price-prediction-instinct-commit-format
+trigger: "When writing a commit message"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Commit Format
+
+## Action
+
+Use a short, freeform message, optionally with a prefix like 'docs(' or 'add('
+
+## Evidence
+
+- Seen in commit examples: 'docs(添加 results 图表)', 'add(results)'
+
+---
+id: multi-source-house-price-prediction-instinct-update-docs-presentation
+trigger: "When someone wants to update the project documentation, report, or presentation slides to reflect recent results or progress."
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Update Docs Presentation
+
+## Action
+
+Edit or add to Report.pdf or pre.pptx, optionally update supporting files, then commit changes with a docs-related message
+
+## Evidence
+
+- Workflow: update-documentation-and-presentation-materials
+- Files: Report.pdf, pre.pptx, 团队分工声明.pdf
+
+---
+id: multi-source-house-price-prediction-instinct-add-results-visualizations
+trigger: "When someone wants to log new experiment results or update visualizations after running new analyses."
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Add Results Visualizations
+
+## Action
+
+Generate new results or figures in results/, update or add to relevant Jupyter notebooks in notebooks/, then commit all new/changed files together
+
+## Evidence
+
+- Workflow: add-or-update-experimental-results-and-visualizations
+- Files: results/*.png, results/*.csv, notebooks/*.ipynb
+
+---
+id: multi-source-house-price-prediction-instinct-track-large-files
+trigger: "When someone needs to track new large binary files (e.g., presentation files) with Git LFS."
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: steve26456d/multi-source-house-price-prediction
+---
+
+# Multi Source House Price Prediction Instinct Track Large Files
+
+## Action
+
+Edit .gitattributes to add new file types or patterns, then commit .gitattributes (and optionally .gitignore) with a docs-related message
+
+## Evidence
+
+- Workflow: update-git-lfs-tracking-for-large-files
+- Files: .gitattributes, .gitignore
+
