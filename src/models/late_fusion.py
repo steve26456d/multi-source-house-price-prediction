@@ -345,6 +345,49 @@ class LateFusionStacking(BaseHousePriceModel):
 
         return final_pred
 
+    def save(self, path: str) -> None:
+        """保存模型到指定路径（覆盖基类以保存子模型）"""
+        import joblib as _joblib
+        tcfg = {}
+        if self.text_model is not None:
+            tcfg = {
+                "input_dim": self.text_model.network[0].in_features,
+                "hidden_dims": self.text_hidden_dims,
+                "dropout": self.text_dropout,
+            }
+        data = {
+            "struct_model": self.struct_model,
+            "text_model_state": self.text_model.state_dict() if self.text_model is not None else None,
+            "text_model_config": tcfg,
+            "meta_model": self.meta_model,
+            "config": self.config,
+            "is_fitted": self.is_fitted,
+            "_y_scaler": self._y_scaler,
+        }
+        _joblib.dump(data, path)
+
+    @classmethod
+    def load(cls, path: str) -> "LateFusionStacking":
+        """从路径加载模型（覆盖基类以恢复子模型）"""
+        import joblib as _joblib
+        data = _joblib.load(path)
+        instance = cls(config=data.get("config", {}))
+        instance.struct_model = data["struct_model"]
+        if data.get("text_model_state") is not None:
+            tcfg = data.get("text_model_config", {})
+            input_dim = tcfg.get("input_dim", 768)
+            instance.text_model = MLPRegressor(
+                input_dim=input_dim,
+                hidden_dims=tcfg.get("hidden_dims", [256, 128]),
+                dropout=tcfg.get("dropout", 0.3),
+            ).to(instance.device)
+            instance.text_model.load_state_dict(data["text_model_state"])
+            instance.text_model.eval()
+        instance.meta_model = data["meta_model"]
+        instance.is_fitted = data.get("is_fitted", True)
+        instance._y_scaler = data.get("_y_scaler", None)
+        return instance
+
     def _check_fitted(self):
         if not self.is_fitted:
             raise RuntimeError("模型尚未训练，请先调用 fit()")
