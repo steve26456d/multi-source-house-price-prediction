@@ -48,7 +48,7 @@
 multi-source-house-price-prediction/
 ├── README.md                       # 项目说明（本文件）
 ├── requirements.txt                # pip 依赖
-├── environment.yaml                # conda 环境配置
+├── environment.yaml                # conda 环境配置（如本地使用 conda）
 ├── .gitignore                      # Git 忽略规则
 ├── .env.example                    # 环境变量模板
 ├── config/
@@ -58,7 +58,8 @@ multi-source-house-price-prediction/
 │   └── processed/                  # 预处理后数据
 ├── doc/
 │   └── TODO.md                     # 团队分工 TODO
-├── notebooks/                      # Jupyter 探索性分析
+├── notebooks/                      # Jupyter 探索性分析与评估分析
+├── results/                        # 实验日志、评估图表和汇总报告
 ├── src/
 │   ├── __init__.py
 │   ├── data/                       # 数据加载与预处理
@@ -168,6 +169,7 @@ Pipeline 会自动完成：
 3. 训练结构化模型、文本模型和多源融合模型
 4. 计算 RMSE、MAE、R2、MAPE 等评估指标
 5. 将实验结果保存到 results/experiment_log.csv
+6. 检查评估分析图表并生成 results/evaluation_summary.md
 ```
 
 ### 6. 运行测试
@@ -190,21 +192,25 @@ python -m pytest
 src/pipeline/run_pipeline.py
 ```
 
-支持三种运行方式：
+支持以下运行方式：
 
 ```bash
 python src/pipeline/run_pipeline.py --check-only
 python src/pipeline/run_pipeline.py --smoke
+python src/pipeline/run_pipeline.py --analysis-only
 python src/pipeline/run_pipeline.py
 ```
 
-| 命令             | 作用                 |
-| -------------- | ------------------ |
-| `--check-only` | 只检查项目结构和数据文件，不训练模型 |
-| `--smoke`      | 使用模拟数据快速测试完整流程     |
-| 默认运行           | 使用真实处理后数据运行完整实验    |
+| 命令 | 作用 |
+| --- | --- |
+| `--check-only` | 只检查项目结构和真实数据文件，不训练模型 |
+| `--smoke` | 使用模拟数据快速测试完整训练、评估、结果写入流程 |
+| `--analysis-only` | 不重新训练模型，只汇总 `results/` 中已有的实验日志和评估分析图 |
+| `--require-figures` | 与默认运行或 `--analysis-only` 搭配使用；若评估图缺失则报错 |
+| `--skip-analysis` | 默认运行后不生成 `results/evaluation_summary.md` |
+| 默认运行 | 使用真实处理后数据运行完整实验，并在结束后生成评估分析汇总 |
 
-## 实验结果
+## 实验结果与评估分析输出
 
 真实数据实验已成功跑通，共训练并评估 9 个模型：
 
@@ -232,19 +238,71 @@ BERT 特征：768
 测试集：1090
 ```
 
+当前 `results/experiment_log.csv` 中的测试集指标如下：
+
+| Model | Modality | Test RMSE | Test MAE | Test R² | Test MAPE |
+| --- | --- | ---: | ---: | ---: | ---: |
+| EarlyFusionMLP | fusion_early | 107350.09 | 71126.47 | 0.8458 | 203.70% |
+| MidFusionModel | fusion_mid | 119933.99 | 79803.65 | 0.8075 | 262.54% |
+| EarlyFusionXGBoost | fusion_early | 128379.50 | 89086.50 | 0.7794 | 264.31% |
+| LateFusionStacking | fusion_late | 137709.85 | 95652.37 | 0.7462 | 340.50% |
+| LinearBaseline | structured | 138423.67 | 98183.64 | 0.7436 | 404.47% |
+| XGBoostBaseline | structured | 143004.62 | 99944.31 | 0.7263 | 321.95% |
+| RandomForestBaseline | structured | 164139.78 | 110770.61 | 0.6394 | 333.82% |
+| TFIDFRidgeBaseline | text | 175620.82 | 132936.36 | 0.5872 | 501.76% |
+| BERTMLPBaseline | text | 207498.53 | 153415.72 | 0.4238 | 711.95% |
+
 最佳模型为：
 
 ```text
 模型：EarlyFusionMLP
-Test RMSE：108014.78
-Test MAE：74059.86
-Test R2：0.8439
+Test RMSE：107350.09
+Test MAE：71126.47
+Test R²：0.8458
 ```
 
-结果表明，融合结构化房屋属性和文本描述特征后，模型预测效果优于单一数据源模型。
+结果表明，融合结构化房屋属性和文本描述特征后，模型预测效果优于单一数据源模型。文本单独建模效果有限，但作为结构化特征的补充可以显著提升预测效果。
 
+### 评估分析图表
 
+评估分析图统一保存在 `results/` 目录下，并可通过以下命令生成汇总清单：
 
+```bash
+python src/pipeline/run_pipeline.py --analysis-only
+```
+
+该命令会读取 `results/experiment_log.csv`，检查评估图是否齐全，并生成：
+
+```text
+results/evaluation_summary.md
+```
+
+主要评估图表包括：
+
+| 类别 | 文件 | 说明 |
+| --- | --- | --- |
+| 基线性能比较 | `fig_baseline_metrics.png` | 对比 9 个模型的 RMSE、MAE、R²、MAPE |
+| 模态差距分析 | `fig_baseline_modality_gap.png` | 对比结构化、文本和融合模型的整体差距 |
+| 预测散点图 | `fig_baseline_pred_vs_true.png` | 展示预测值与真实值的贴合程度 |
+| 残差分析 | `fig_baseline_residuals.png` | 比较不同模型的误差分布 |
+| 特征重要性 | `fig_baseline_feature_importance.png` | 分析结构化模型中关键房屋属性贡献 |
+| 错误分析 | `fig_error_*.png` | 从箱线图、价格区间、CDF、相对误差等角度分析误差 |
+| 消融实验 | `fig_ablation_*.png` | 分析结构化模态、文本模态和三类融合策略的增量贡献 |
+| 显著性检验 | `fig_ablation_significance_matrix.png` | 展示模型性能差异的统计显著性 |
+
+对应的分析 Notebook 位于：
+
+```text
+notebooks/04_evaluation_baseline.ipynb
+notebooks/05_ablation_study.ipynb
+notebooks/06_error_analysis.ipynb
+```
+
+这些图表可直接用于报告和答辩 PPT 中的“评估分析”部分。若需要强制检查图表是否齐全，可以运行：
+
+```bash
+python src/pipeline/run_pipeline.py --analysis-only --require-figures
+```
 
 ---
 
@@ -264,7 +322,8 @@ Test R2：0.8439
 - **单模态基线**：仅结构化 / 仅文本
 - **融合实验**：早期融合 / 中期融合 / 晚期融合
 - **消融实验**：隔离各模态增量贡献
-- **显著性检验**：配对 t-test 或 Wilcoxon 检验
+- **显著性检验**：Wilcoxon 检验，用于判断模型误差差异是否具有统计显著性
+- **评估图表**：基线对比、预测散点图、残差分析、错误分析、消融实验和显著性矩阵
 
 ---
 
